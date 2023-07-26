@@ -96,3 +96,32 @@ def run_mc_episode(v_func, num_episodes, s0=STARTING_STATE, gamma=1.0):
 
   v_func = s_v / (n_v )
   return v_func
+
+# Incremental Monte Carlo
+def run_incre_mc_episode(v_func, num_episodes, s0=STARTING_STATE, gamma=1.0, alpha=None):
+
+  # 하나의 episode에 대해 episode의 총 개수만큼 계산
+  for _ in range(num_episodes):
+    states = [s0]
+    rewards = []
+    next_state = s0
+
+    while True:
+      next_state, reward = take_action(next_state)
+      rewards.append(reward)
+      if not(is_exit_state(next_state)):
+        states.append(next_state)
+      else:
+        break
+    
+    states = reversed(states)
+    rewards = reversed(rewards)
+    iter = zip(states, rewards)
+    cum_r = 0
+    for s, r in iter:
+      cum_r *= gamma
+      cum_r += r
+
+      v_func[int(s)] += alpha * (cum_r - v_func[int(s)])
+
+  return v_func
